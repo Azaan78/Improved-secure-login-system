@@ -2,6 +2,10 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
+#Added imports
+import os
+from flask_wtf import CSRFProtect
+
 db = SQLAlchemy()
 
 def create_app():

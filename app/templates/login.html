@@ -13,9 +13,31 @@
 {% endwith %}
 
 <form method="POST" novalidate>
-  Username: <input type="text" name="username"><br>
-  Password: <input type="password" name="password"><br>
-  <input type="submit" value="Login">
+    <input type="hidden" name="csrf-token" value="{{ csrf_token }}">
+
+    <!-- Section for username -->
+    <div class="mb-3">
+        <label>Username: </label>
+        <input class="form-control" type="text" name="username" value="{{ request.form.username or '' }}" maxlength="120" required><br>
+
+        {# If there is an error with the username then set to text-danger #}
+        {% if errors.username %}
+            <div class="text-danger">{{ errors.username }}</div>
+        {% endif %}
+    </div>
+
+    <!-- Section for password -->
+    <div class="mb-3">
+        <label>Password: </label>
+        <input class="form-control" type="password" name="password" maxlength="120" minlength="10" required><br>
+
+        {# If there is an error with the password then set to text-danger #}
+        {% if errors.password %}
+            <div class="text-danger">{{ errors.password }}</div>
+        {% endif %}
+    </div>
+
+  <input class="btn btn-primary" type="submit" value="Login">
 </form>
 {% endblock %}
 
