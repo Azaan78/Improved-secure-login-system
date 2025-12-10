@@ -9,6 +9,7 @@ import re
 import html
 from flask import current_app as app
 from sqlalchemy import bindparam
+import datetime
 
 #Server side format for regex (Regular expressions)
 email_re = re.compile(r'^[^@+@[^@]+\.[^@]+$')
@@ -17,15 +18,47 @@ email_re = re.compile(r'^[^@+@[^@]+\.[^@]+$')
 allowed_tags = {'b','i','u','em','strong','a','p','ul','ol','li','br'}
 attr_re = re.compile(r'([a-zA-Z0-9_\-]+)\s*=\s*"([^"]*)"')
 
+#Password blacklist
+Password_Blacklist = {"Password123$", "Qwerty123!", "Adminadmin1@", "welcome123!"}
+Repeated_seq = re.compile(r'(.)\1\1')
+
 #Checks to see if email is valid
 def is_valid_email(username):
     return bool(username and email_re.match(username) and len(username)<=120)
 
+
 def is_valid_bio_length(bio):
     return len(bio or '') <=1500
 
+
 def is_valid_password(password):
     return bool(password and 10 <= len(password) <= 120)
+
+
+def strong_password_check(password:str, username:str):
+    if len(password) < 10 or len(password) > 120:
+        return False
+
+    if username and username.lower() in password.lower():
+        return False
+
+    if password in Password_Blacklist:
+        return False
+
+    if Repeated_seq.search(password):
+        return False
+
+    if not re.search(r'[a-z]', password):
+        return False
+
+    if not re.search(r'\d', password):
+        return False
+
+    if not re.search(r'[A-Za-z0-9]', password):
+        return False
+
+    return True
+
 
 #Takes raw bio (as string) and sanatises
 def sanatize_bio(raw: str) ->str:
@@ -96,18 +129,18 @@ def home():
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    errors = {}
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
-        password = request.form('password') or ''
+        password = request.form.get('password') or ''
 
-        errors = {}
         if not is_valid_email(username):
             errors['username'] = 'Enter a valid email address.'
 
         if not password:
             errors['password'] = 'Enter your password.'
 
-        if not is_valid_password(password):
+        if not strong_password_check(password):
             errors['password'] = 'Enter a valid password.'
 
         if errors:
@@ -121,13 +154,16 @@ def login():
 
         if row:
             user = db.session.get(User, row['id'])
+            session.clear()
             session['user'] = user.username
             session['role'] = user.role
-            session['bio'] = user.bio
+            session['has_bio'] = bool(user.bio)
+            session.permanent = True
+            session['authen_time'] = datetime.datetime.utc().isoformat()
             return redirect(url_for('main.dashboard'))
         else:
             flash('Login credentials are invalid, please try again')
-    return render_template('login.html')
+    return render_template('login.html', errors=errors)
 
 
 
@@ -155,7 +191,7 @@ def register():
         if not is_valid_email(username):
             errors['username'] = 'Enter a valid email address (max 120 characters)'
 
-        if not is_valid_password(password):
+        if not strong_password_check(password):
             errors['password'] = 'Enter a valid password (10-120 characters)'
 
         if not is_valid_bio_length(bio):
@@ -222,10 +258,10 @@ def change_password():
         new_password = request.form.get('new_password', '')
 
         errors = {}
-        if not is_valid_password(current_password):
+        if not strong_password_check(current_password):
             errors['current_password'] = 'Enter your current password.'
 
-        if not is_valid_password(new_password):
+        if not strong_password_check(new_password):
             errors['new_password'] = 'Enter your new password.'
 
         if new_password == current_password:

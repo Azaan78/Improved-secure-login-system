@@ -28,9 +28,11 @@ def create_app():
             {"username": "admin1@email.com", "password": "Adminpass!23", "role": "admin", "bio": "I'm an administrator"}
         ]
 
-        for user in users:
-            user = User(username=user["username"], password=user["password"], role=user["role"], bio=user["bio"])
-            db.session.add(user)
+
+        if User.query.count() == 0:
+            for user in users:
+                user = User(username=user["username"], password=user["password"], role=user["role"], bio=user["bio"])
+                db.session.add(user)
             db.session.commit()
 
     return app
