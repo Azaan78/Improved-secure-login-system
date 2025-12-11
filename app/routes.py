@@ -130,6 +130,12 @@ def home():
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     errors = {}
+
+    #CSRF token checks
+    submitted = request.form.get('csrf_token' , '')
+    if not submitted or submitted != session.get('csrf_token'):
+        abort(400)
+
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
         password = request.form.get('password') or ''
@@ -181,6 +187,11 @@ def dashboard():
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     errors ={}
+
+    # CSRF token checks
+    submitted = request.form.get('csrf_token', '')
+    if not submitted or submitted != session.get('csrf_token'):
+        abort(400)
 
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
@@ -246,6 +257,11 @@ def user_dashboard():
 
 @main.route('/change-password', methods=['GET', 'POST'])
 def change_password():
+    # CSRF token checks
+    submitted = request.form.get('csrf_token', '')
+    if not submitted or submitted != session.get('csrf_token'):
+        abort(400)
+
     # Require basic "login" state
     if 'user' not in session:
         stack = ''.join(traceback.format_stack(limit=25))

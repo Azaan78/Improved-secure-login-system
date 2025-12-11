@@ -1,12 +1,39 @@
-from flask import Flask
+from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 
 #Added imports
 import os
 from flask_wtf import CSRFProtect
+import secrets
 
 db = SQLAlchemy()
+
+#NEEDS COMMENTS
+@app.context_processor
+def inject_csrf():
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_urlsafe(32)
+    return dict(csrf_token=session['csrf_token'])
+
+
+
+@app.after_request
+def set_security_headers(response):
+    csp = ("default-src 'self'; "
+           "script-src 'self' 'unsafe-inline'; "
+           "style-src 'self' 'unsafe-inline'; "
+           "img-src 'self' data:;")
+    response.headers['Content-Security-Policy'] = csp
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=()'
+    if not app.debug and app.config.get('USE_HSTS', True):
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    return response
+
+
 
 def create_app():
     app = Flask(__name__)
@@ -36,4 +63,3 @@ def create_app():
             db.session.commit()
 
     return app
-
