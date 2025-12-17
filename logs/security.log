@@ -1,0 +1,46 @@
+2025-12-16 16:24:29,730 | WARNING | user=azaan@mail.com ip=127.0.0.1 | register_failed
+2025-12-16 16:24:43,817 | WARNING | user=azaan@mail.com ip=127.0.0.1 | register_failed
+2025-12-16 16:25:04,525 | WARNING | user=azaan@mail.com ip=127.0.0.1 | register_failed
+2025-12-16 16:28:44,960 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:30:52,268 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:08,496 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:10,111 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:11,892 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:12,125 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:12,287 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-16 16:31:14,203 | WARNING | user=test.user@example.com ip=127.0.0.1 | register_failed
+2025-12-17 16:48:11,667 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 16:50:19,020 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:35:04,920 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:43:30,113 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:43:30,315 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:43:30,481 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:48:56,234 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:48:56,414 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:48:56,592 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:53:12,576 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:53:12,734 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 17:53:12,885 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:10:03,634 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:10:03,865 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:10:04,060 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:10:41,095 | WARNING | user=l ip=127.0.0.1 | register_failed
+2025-12-17 23:11:38,080 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:11:38,879 | INFO | user=testuser1@example.com ip=127.0.0.1 | register_successful
+2025-12-17 23:11:51,212 | INFO | user=testuser1@example.com ip=127.0.0.1 | login_successful
+2025-12-17 23:11:51,230 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:12:05,412 | WARNING | user=testuser1@example.com ip=127.0.0.1 | authorization_failure
+2025-12-17 23:12:08,188 | WARNING | user=testuser1@example.com ip=127.0.0.1 | authorization_failure
+2025-12-17 23:12:15,721 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:12:51,398 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:15:48,457 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:15:49,005 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:15:49,388 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:16:54,012 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:16:54,526 | INFO | user=azaan@mail.com ip=127.0.0.1 | register_successful
+2025-12-17 23:17:02,652 | INFO | user=azaan@mail.com ip=127.0.0.1 | login_successful
+2025-12-17 23:17:02,667 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:17:17,041 | INFO | user=azaan@mail.com ip=127.0.0.1 | password_change_successful
+2025-12-17 23:17:17,057 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:17:34,312 | INFO | user=azaan@mail.com ip=127.0.0.1 | login_successful
+2025-12-17 23:17:34,326 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set

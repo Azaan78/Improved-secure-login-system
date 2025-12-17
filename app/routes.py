@@ -13,10 +13,11 @@ from sqlalchemy import bindparam
 import datetime
 from functools import wraps
 from cryptography.fernet import Fernet, InvalidToken
+import secrets
 
 
 # Server side format for regex (Regular expressions)
-email_re = re.compile(r'^[^@+@[^@]+\.[^@]+$')
+email_re = re.compile( r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 
 # Setting whitelist for tags and attributes
 allowed_tags = {'b','i','u','em','strong','a','p','ul','ol','li','br'}
@@ -167,6 +168,7 @@ def get_fernet():
 
     # If there is no key, then disable encryption
     if not key:
+        current_app.logger.warning('FERNET_KEY not set', extra={'user':'system','ip':request.remote_addr if request else 'N/A'})
         return None
 
     try:
@@ -175,6 +177,7 @@ def get_fernet():
 
     # If key not valid then fail
     except Exception:
+        current_app.logger.error('FERNET_KEY not set')
         return None
 
 
@@ -236,6 +239,9 @@ def login():
     # Initialising a dictionary of errors
     errors = {}
 
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+
     # If post request, then save username and password
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
@@ -250,27 +256,23 @@ def login():
         if not is_valid_email(username):
             errors['username'] = 'Enter a valid email address.'
 
+        if not is_valid_password(password):
+            errors['password'] = 'Emter a valid password.'
+
         if not password:
             errors['password'] = 'Enter your password.'
-
-        if not strong_password_check(password):
-            errors['password'] = 'Enter a valid password.'
 
         # If there are any issues/errors then render template with errors
         if errors:
             return render_template('login.html', errors=errors)
 
-        # If no errors then SELECT record from table
-        select = text('SELECT * FROM user WHERE username = :username AND password = :password')
-        row = db.session.execute(select.bindparams(
-            bindparam('username', type = db.String),
-            bindparam('password', type=db.String)
-        ),{'username' : username, 'password' : password}).mappings().first()
+        # Query database for username to login
+        user = User.query.filter_by(username=username).first()
 
-        # If row is selected then save all session data from record selected and redirect
-        if row:
-            user = db.session.get(User, row['id'])
+        # Checks username query and saves account details in session
+        if user and user.check_password(password, current_app.config.get('PASSWORD_PEPPER')):
             session.clear()
+            session['csrf_token'] = secrets.token_hex(16)
             session['user'] = user.username
             session['role'] = user.role
             session['has_bio'] = bool(user.bio)
@@ -311,6 +313,9 @@ def register():
     # Initialising a dictionary of errors
     errors ={}
 
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+
     # If post request, then save username, password and other data for account creation
     if request.method == 'POST':
         username = (request.form.get('username') or '').strip()
@@ -327,7 +332,7 @@ def register():
         if not is_valid_email(username):
             errors['username'] = 'Enter a valid email address (max 120 characters)'
 
-        if not strong_password_check(password):
+        if not strong_password_check(password, username):
             errors['password'] = 'Enter a valid password (10-120 characters)'
 
         if not is_valid_bio_length(bio):
@@ -343,13 +348,9 @@ def register():
         stored_bio = encrypt_bio(safe_bio)
 
         # Secure inserts
-        insert = text ("INSERT INTO user (username, password, role, bio) VALUES (:username, :password, :role, :bio)")
-        db.session.execute(insert).bindparams(
-            bindparam('username', type = db.String),
-            bindparam('password', type = db.String),
-            bindparam('role', type = db.String),
-            bindparam('bio', type = db.String)
-        ), {'username': username, 'password': password, 'role': role, 'bio': stored_bio}
+        user = User(username=username, password='', role=role, bio=stored_bio)
+        user.set_password(password, current_app.config.get('PASSWORD_PEPPER'))
+        db.session.add(user)
 
         # Commits, logs and redirects new account
         db.session.commit()
@@ -390,12 +391,15 @@ def user_dashboard():
 def change_password():
     # Initialising a dictionary of errors and saves username in current session
     errors = {}
-    username = session['user']
+
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
 
     # User needs to be logged in
     if 'user' not in session:
-        stack = ''.join(traceback.format_stack(limit=25))
-        abort(403, description=f"Access denied.\n\n--- STACK (demo) ---\n{stack}")
+        abort(403)
+
+    username = session['user']
 
     # If post request, then save current and new password
     if request.method == 'POST':
@@ -407,11 +411,11 @@ def change_password():
         if not submitted or submitted != session.get('csrf_token'):
             abort(400)
 
-        # Password checks for new passwords
-        if not strong_password_check(current_password):
-            errors['current_password'] = 'Enter your current password.'
+        user = User.query.filter_by(username=username).first()
+        if not user or not user.check_password(current_password, current_app.config.get('PASSWORD_PEPPER')):
+            errors['current_password'] = 'Current password is incorrect.'
 
-        if not strong_password_check(new_password):
+        if not strong_password_check(new_password, username):
             errors['new_password'] = 'Enter your new password.'
 
         if new_password == current_password:
@@ -423,25 +427,14 @@ def change_password():
             return render_template('change_password.html', errors=errors)
 
         # Selects record to have password overwritten
-        select = text("SELECT * FROM user WHERE username = :username AND password = :current_password LIMIT 1")
-        row = db.session.execute(select.bindparams(
-            bindparam('username', type = db.String),
-            bindparam('current_password', type = db.String)
-        ), {'username':username, 'current_password':current_password}).mappings().first()
+        user.set_password(new_password, current_app.config.get('PASSWORD_PEPPER'))
+        db.session.commit()
 
         # If there is no row to overwrite the password, flash and log error, as well as render template
-        if not row:
+        if not user:
             flash('Current password is incorrect', 'error')
             current_app.logger.warning('password_change_failed', extra={'user': username, 'ip': request.remote_addr})
             return render_template('change_password.html', errors=errors)
-
-        # Overwrites old password in table
-        update = text("UPDATE user SET password = :new_password WHERE username = :username")
-        db.session.execute(update.bindparams(
-            bindparam('new_password', type = db.String),
-            bindparam('username', type = db.String)
-        ), {'new_password': new_password, 'username': username})
-        db.session.commit()
 
         # Flashes and logs successful password change and redirects to dashboard
         flash('Password changed successfully', 'success')
@@ -449,7 +442,7 @@ def change_password():
         return redirect(url_for('main.dashboard'))
 
     # If a get request then render change password form
-    return render_template('change_password.html')
+    return render_template('change_password.html', errors=errors)
 
 
 # Error handling

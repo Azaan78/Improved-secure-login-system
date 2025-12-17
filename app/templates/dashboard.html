@@ -15,13 +15,12 @@
 <p>This is your dashboard.</p>
 <p><b>Bio:</b> {{bio}}</p>
 
-<button id="greet-btn" class="btn btn-success" data-username="{{ username }}">
+<button id="greet-btn" class="btn btn-success" data-username="{{ username | e }}">
     Greet Me
   </button>
 {% endblock %}
 
 {% block scripts %}
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   {# Page-specific JS (binds event listeners, no inline handlers) #}
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% endblock %}

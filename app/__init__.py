@@ -1,5 +1,6 @@
 from flask import Flask, session
 from flask_sqlalchemy import SQLAlchemy
+
 from config import Config
 
 
@@ -23,7 +24,10 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
 
-
+    app.config['SECRET_KEY'] = os.environ.get(
+        'SECRET_KEY',
+        'dev-secret-key-change-me'
+    )
 
     #Initialising logging
     log_dir = app.config.get('LOG_DIR', 'logs')
@@ -63,6 +67,7 @@ def create_app():
 
 
     with app.app_context():
+        from app.routes import encrypt_bio, sanatize_bio
         from .models import User
         db.drop_all()
         db.create_all()
@@ -75,8 +80,10 @@ def create_app():
 
         if User.query.count() == 0:
             for user in users:
-                user = User(username=user["username"], password=user["password"], role=user["role"], bio=user["bio"])
-                db.session.add(user)
+                user_data = user
+                db_user = User(username=user_data["username"], password="", role=user_data["role"], bio=encrypt_bio(sanatize_bio(user_data["bio"])))
+                db_user.set_password(user_data["password"], app.config.get('PASSWORD_PEPPER'))
+                db.session.add(db_user)
             db.session.commit()
 
     return app
