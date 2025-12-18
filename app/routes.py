@@ -24,7 +24,7 @@ allowed_tags = {'b','i','u','em','strong','a','p','ul','ol','li','br'}
 attr_re = re.compile(r'([a-zA-Z0-9_\-]+)\s*=\s*"([^"]*)"')
 
 # Password blacklist
-Password_Blacklist = {"Password123$", "Qwerty123!", "Adminadmin1@", "welcome123!"}
+Password_Blacklist = {"Password123$", "Qwerty123!", "Adminadmin1@", "weLcome123!"}
 Repeated_seq = re.compile(r'(.)\1\1')
 
 
@@ -59,14 +59,19 @@ def strong_password_check(password:str, username:str):
     if Repeated_seq.search(password):
         return False
 
+    if not re.search(r'[A-Z]', password):
+        return False
+
     if not re.search(r'[a-z]', password):
         return False
 
     if not re.search(r'\d', password):
         return False
 
-    if not re.search(r'[A-Za-z0-9]', password):
+    if not re.search(r'[^A-Za-z0-9]', password):
         return False
+
+
 
     return True
 
@@ -443,6 +448,14 @@ def change_password():
 
     # If a get request then render change password form
     return render_template('change_password.html', errors=errors)
+
+
+
+@main.route('/logout', methods=['POST', 'GET'])
+def logout():
+    session.clear()
+    return redirect(url_for('main.login'))
+
 
 
 # Error handling

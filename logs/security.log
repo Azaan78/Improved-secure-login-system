@@ -44,3 +44,9 @@
 2025-12-17 23:17:17,057 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
 2025-12-17 23:17:34,312 | INFO | user=azaan@mail.com ip=127.0.0.1 | login_successful
 2025-12-17 23:17:34,326 | WARNING | user=system ip=127.0.0.1 | FERNET_KEY not set
+2025-12-17 23:33:19,421 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:33:19,581 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:33:19,746 | WARNING | user=system ip=N/A | FERNET_KEY not set
+2025-12-17 23:33:30,755 | WARNING | user=azaan@mail.com ip=127.0.0.1 | authorization_failure
+2025-12-17 23:33:33,120 | WARNING | user=azaan@mail.com ip=127.0.0.1 | authorization_failure
+2025-12-17 23:33:34,819 | WARNING | user=azaan@mail.com ip=127.0.0.1 | authorization_failure
